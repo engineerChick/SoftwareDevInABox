@@ -1,0 +1,201 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Creates a Software Development Business in a Box",
+  "Parameters": {
+    "KeyPair": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Key pair to log into EC2 instances"
+    }
+  },
+  "Resources": {
+    "VPC": {
+      "Properties": {
+        "CidrBlock": "172.17.0.0/16",
+        "EnableDnsSupport": true,
+        "EnableDnsHostnames": true,
+        "InstanceTenancy": "default",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "Type": "AWS::EC2::VPC"
+    },
+    "SubnetPublic": {
+      "Properties": {
+        "CidrBlock": "172.17.0.0/24",
+        "MapPublicIpOnLaunch": true,
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "-SubnetPublic"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Subnet"
+    },
+    "SubnetPrivate": {
+      "Properties": {
+        "CidrBlock": "172.17.1.0/24",
+        "MapPublicIpOnLaunch": false,
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "-SubnetPrivate"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Subnet"
+    },
+    "InternetGateway": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ]
+      },
+      "Type": "AWS::EC2::InternetGateway"
+    },
+    "VPCGatewayAttachment": {
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "InternetGateway"
+        },
+        "VpcId": {
+          "Ref": "VPC"
+        }
+      },
+      "Type": "AWS::EC2::VPCGatewayAttachment"
+    },
+    "SubnetPublicRouteTable": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "-SubnetPublicRouteTable"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      "Type": "AWS::EC2::RouteTable"
+    },
+    "SubnetPublicRoute": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "InternetGateway"
+        },
+        "RouteTableId": {
+          "Ref": "SubnetPublicRouteTable"
+        }
+      },
+      "DependsOn": "VPCGatewayAttachment",
+      "Type": "AWS::EC2::Route"
+    },
+    "SubnetPublicRouteTableAssociation": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "SubnetPublicRouteTable"
+        },
+        "SubnetId": {
+          "Ref": "SubnetPublic"
+        }
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "SubnetPrivateRouteTable": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "-SubnetPrivateRouteTable"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      "Type": "AWS::EC2::RouteTable"
+    },
+    "SubnetPrivateRoute": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "InternetGateway"
+        },
+        "RouteTableId": {
+          "Ref": "SubnetPrivateRouteTable"
+        }
+      },
+      "DependsOn": "VPCGatewayAttachment",
+      "Type": "AWS::EC2::Route"
+    },
+    "SubnetPrivateRouteTableAssociation": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "SubnetPrivateRouteTable"
+        },
+        "SubnetId": {
+          "Ref": "SubnetPrivate"
+        }
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    }
+  }
+}
