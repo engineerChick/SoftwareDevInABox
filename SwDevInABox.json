@@ -196,6 +196,65 @@
         }
       },
       "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "LaunchConfig": {
+      "Properties" : {
+        "AssociatePublicIpAddress" : true,
+        "EbsOptimized" : false,
+        "IamInstanceProfile" : {
+          "Ref": "ECSInstanceProfile"
+        },
+        "ImageId" : "ami-5253c32d",
+        "InstanceMonitoring" : true,
+        "InstanceType" : "t2.medium",
+        "KeyName" : {
+          "Ref": "KeyPair"
+        },
+        "LaunchConfigurationName" : "Production",
+        "SecurityGroups" : [ SecurityGroup ],
+        "UserData" : {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash\n",
+                "set -ex\n",
+                "yum install -y aws-cfn-bootstrap\n",
+                "/opt/aws/bin/cfn-init -v ",
+                "  --stack ",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "  --resource ECSLaunchConfig",
+                "  --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\n",
+                "echo ECS_CLUSTER=",
+                {
+                  "Ref": "ECSProdCluster"
+                },
+                " >> /etc/ecs/ecs.config\n",
+                "service docker restart\n",
+                "start ecs\n",
+                "/opt/aws/bin/cfn-signal -e $? ",
+                "  --stack ",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "  --resource ECSAutoScalingGroup",
+                "  --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\n"
+              ]
+            ]
+          }
+        }
+      },
+      "Type" : "AWS::AutoScaling::LaunchConfiguration"
     }
   }
 }
