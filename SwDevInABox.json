@@ -205,16 +205,13 @@
           "Ref": "ECSInstanceProfile"
         },
         "ImageId" : "ami-5253c32d",
-        "InstanceId" : String,
-        "InstanceMonitoring" : Boolean,
-        "InstanceType" : String,
-        "KernelId" : String,
-        "KeyName" : String,
-        "LaunchConfigurationName" : String,
-        "PlacementTenancy" : String,
-        "RamDiskId" : String,
-        "SecurityGroups" : [ SecurityGroup, ... ],
-        "SpotPrice" : String,
+        "InstanceMonitoring" : true,
+        "InstanceType" : "t2.medium",
+        "KeyName" : {
+          "Ref": "KeyPair"
+        },
+        "LaunchConfigurationName" : "Production",
+        "SecurityGroups" : [ SecurityGroup ],
         "UserData" : String
       },
       "Type" : "AWS::AutoScaling::LaunchConfiguration"
