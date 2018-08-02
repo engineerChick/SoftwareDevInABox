@@ -196,6 +196,28 @@
         }
       },
       "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "LaunchConfig": {
+      "Properties" : {
+        "AssociatePublicIpAddress" : true,
+        "EbsOptimized" : false,
+        "IamInstanceProfile" : {
+          "Ref": "ECSInstanceProfile"
+        },
+        "ImageId" : "ami-5253c32d",
+        "InstanceId" : String,
+        "InstanceMonitoring" : Boolean,
+        "InstanceType" : String,
+        "KernelId" : String,
+        "KeyName" : String,
+        "LaunchConfigurationName" : String,
+        "PlacementTenancy" : String,
+        "RamDiskId" : String,
+        "SecurityGroups" : [ SecurityGroup, ... ],
+        "SpotPrice" : String,
+        "UserData" : String
+      },
+      "Type" : "AWS::AutoScaling::LaunchConfiguration"
     }
   }
 }
