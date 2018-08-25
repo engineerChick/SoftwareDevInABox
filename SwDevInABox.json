@@ -210,9 +210,9 @@
         "KeyName" : {
           "Ref": "KeyPair"
         },
-        "LaunchConfigurationName" : "Production",
-        "SecurityGroups" : [ SecurityGroup ],
-        "UserData" : {
+        "LaunchConfigurationName": "Production",
+        "SecurityGroups": [ SecurityGroup ],
+        "UserData": {
           "Fn::Base64": {
             "Fn::Join": [
               "",
@@ -254,7 +254,35 @@
           }
         }
       },
-      "Type" : "AWS::AutoScaling::LaunchConfiguration"
-    }
+      "Type": "AWS::AutoScaling::LaunchConfiguration"
+    },
+    "productionASG":{  
+       "Properties": {
+          "AutoScalingGroupName": "Production",
+          "DesiredCapacity": 2,
+          "LaunchConfigurationName" : {
+            "Ref": "LaunchConfig"
+          },
+          "MaxSize": 2,
+          "MinSize": 2,
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": {
+                "Ref": "AWS::StackName"
+              }
+            } 
+          ],
+          "VPCZoneIdentifier": [ 
+            {
+              "Ref": "SubnetPublic"
+            },
+            {
+              "Ref": "SubnetPrivate"
+            }
+          ]
+       },
+       "Type": "AWS::AutoScaling::AutoScalingGroup"
+    }  
   }
 }
