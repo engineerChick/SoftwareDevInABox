@@ -211,7 +211,14 @@
           "Ref": "KeyPair"
         },
         "LaunchConfigurationName": "Production",
-        "SecurityGroups": [ SecurityGroup ],
+        "SecurityGroups": [
+          {
+            "Ref": "productionSecurityGroupPublic"
+          },
+          {
+            "Ref": "productionSecurityGroupPrivate"
+          }
+        ],
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [
@@ -283,6 +290,93 @@
           ]
        },
        "Type": "AWS::AutoScaling::AutoScalingGroup"
-    }  
+    },
+    "productionSecurityGroupPublic":{
+      "Properties" : {
+        "GroupName" : "ProductionPublic",
+        "GroupDescription" : "Public Security Group for Production Instances & Services",
+        "SecurityGroupIngress" : [
+          {
+            "CidrIp" : "0.0.0.0/0",
+            "Description" : "Jira Web Interface",
+            "FromPort" : 8081,
+            "IpProtocol" : "tcp"
+          },
+          {
+            "CidrIp" : "0.0.0.0/0",
+            "Description" : "Confluence Web Interface",
+            "FromPort" : 8090,
+            "IpProtocol" : "tcp"
+          },
+          {
+            "CidrIp" : "0.0.0.0/0",
+            "Description" : "Confluence Collaborative Editing",
+            "FromPort" : 8091,
+            "IpProtocol" : "tcp"
+          },{
+            "CidrIp" : "0.0.0.0/0",
+            "Description" : "Gitlab Web Interface",
+            "FromPort" : 8082,
+            "IpProtocol" : "tcp"
+          },
+          {
+            "CidrIp" : "0.0.0.0/0",
+            "Description" : "Gitlab SSH",
+            "FromPort" : 2222,
+            "IpProtocol" : "tcp"
+          },
+          {
+            "CidrIp" : "0.0.0.0/0",
+            "Description" : "Jenkins Web Interface",
+            "FromPort" : 8080,
+            "IpProtocol" : "tcp"
+          }
+        ],
+        "Tags" :  [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          } 
+        ],
+        "VpcId" : {
+          "Ref": "VPC"
+        }
+     },
+     "Type" : "AWS::EC2::SecurityGroup"
+    },
+    "productionSecurityGroupPrivate":{
+      "Properties" : {
+        "GroupName" : "ProductionPrivate",
+        "GroupDescription" : "Private Security Group for Production Instances & Services",
+        "SecurityGroupIngress" : [
+          {
+            "CidrIp" : "0.0.0.0/0",
+            "Description" : "Jenkins Slave",
+            "FromPort" : 50000,
+            "IpProtocol" : "tcp"
+          },
+          {
+            "CidrIp" : "0.0.0.0/0",
+            "Description" : "Postgres",
+            "FromPort" : 5432,
+            "IpProtocol" : "tcp"
+          }
+        ],
+        "Tags" :  [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          } 
+        ],
+        "VpcId" : {
+          "Ref": "VPC"
+        }
+     },
+     "Type" : "AWS::EC2::SecurityGroup"
+    } 
   }
 }
