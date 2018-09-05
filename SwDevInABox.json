@@ -197,14 +197,14 @@
       },
       "Type": "AWS::EC2::SubnetRouteTableAssociation"
     },
-    "LaunchConfig": {
+    "ECSLaunchConfig": {
       "Properties" : {
         "AssociatePublicIpAddress" : true,
         "EbsOptimized" : false,
         "IamInstanceProfile" : {
           "Ref": "ECSInstanceProfile"
         },
-        "ImageId" : "ami-5253c32d",
+        "ImageId" : "ami-00129b193dc81bc31",
         "InstanceMonitoring" : true,
         "InstanceType" : "t2.medium",
         "KeyName" : {
@@ -226,6 +226,7 @@
               [
                 "#!/bin/bash\n",
                 "set -ex\n",
+                "yum update -y\n",
                 "yum install -y aws-cfn-bootstrap\n",
                 "/opt/aws/bin/cfn-init -v ",
                 "  --stack ",
@@ -261,6 +262,17 @@
           }
         }
       },
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "config": {
+            "packages": {
+              "yum": {
+                "nfs-utils": []
+              }
+            }
+          }
+        }
+      },
       "Type": "AWS::AutoScaling::LaunchConfiguration"
     },
     "productionASG":{  
@@ -268,7 +280,7 @@
           "AutoScalingGroupName": "Production",
           "DesiredCapacity": 2,
           "LaunchConfigurationName" : {
-            "Ref": "LaunchConfig"
+            "Ref": "ECSLaunchConfig"
           },
           "MaxSize": 2,
           "MinSize": 2,
@@ -277,7 +289,8 @@
               "Key": "Name",
               "Value": {
                 "Ref": "AWS::StackName"
-              }
+              },
+              "PropagateAtLaunch": true
             } 
           ],
           "VPCZoneIdentifier": [ 
@@ -300,35 +313,41 @@
             "CidrIp" : "0.0.0.0/0",
             "Description" : "Jira Web Interface",
             "FromPort" : 8081,
+            "ToPort" : 8081,
             "IpProtocol" : "tcp"
           },
           {
             "CidrIp" : "0.0.0.0/0",
             "Description" : "Confluence Web Interface",
             "FromPort" : 8090,
+            "ToPort" : 8090,
             "IpProtocol" : "tcp"
           },
           {
             "CidrIp" : "0.0.0.0/0",
             "Description" : "Confluence Collaborative Editing",
             "FromPort" : 8091,
+            "ToPort" : 8091,
             "IpProtocol" : "tcp"
           },{
             "CidrIp" : "0.0.0.0/0",
             "Description" : "Gitlab Web Interface",
             "FromPort" : 8082,
+            "ToPort" : 8082,
             "IpProtocol" : "tcp"
           },
           {
             "CidrIp" : "0.0.0.0/0",
             "Description" : "Gitlab SSH",
             "FromPort" : 2222,
+            "ToPort" : 2222,
             "IpProtocol" : "tcp"
           },
           {
             "CidrIp" : "0.0.0.0/0",
             "Description" : "Jenkins Web Interface",
             "FromPort" : 8080,
+            "ToPort" : 8080,
             "IpProtocol" : "tcp"
           }
         ],
@@ -355,12 +374,14 @@
             "CidrIp" : "0.0.0.0/0",
             "Description" : "Jenkins Slave",
             "FromPort" : 50000,
+            "ToPort" : 50000,
             "IpProtocol" : "tcp"
           },
           {
             "CidrIp" : "0.0.0.0/0",
             "Description" : "Postgres",
             "FromPort" : 5432,
+            "ToPort" : 5432,
             "IpProtocol" : "tcp"
           }
         ],
@@ -496,7 +517,7 @@
                         },
                         ":cluster/",
                         {
-                          "Ref": "ECSCluster"
+                          "Ref": "ECSProdCluster"
                         }
                       ]
                     ]
