@@ -291,7 +291,7 @@
                 "Ref": "AWS::StackName"
               },
               "PropagateAtLaunch": true
-            } 
+            }  
           ],
           "VPCZoneIdentifier": [ 
             {
@@ -592,6 +592,55 @@
         ]
       },
       "Type": "AWS::IAM::Role"
-    }
+    },
+    "ProdLoadBalancer":{      
+      "Properties" : {
+        "SecurityGroups" : [
+          {
+            "Ref":"productionSecurityGroupPublic"
+          }
+        ],
+        "Subnets" : [
+          {
+            "Ref":"SubnetPublic"
+          }
+        ],
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          } 
+        ],
+        "Type" : "application"
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    },
+    "ProdELBListener":{
+      "Properties" : {
+        "Certificates" : [
+          {
+            "CertificateArn" : {
+              "Ref":"ProductionCertificate"
+            }
+          }
+        ],
+        "DefaultActions" : [
+          {
+            "TargetGroupArn" : {
+              "Ref":"ProductionTargetGroup"
+            },
+            "Type" : "forward"
+          }
+        ],
+        "LoadBalancerArn" : {
+          "Ref":"ProdLoadBalancer"
+        },
+        "Port" : 443,
+        "Protocol" : "HTTPS"
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::Listener"
+    },
   }
 }
