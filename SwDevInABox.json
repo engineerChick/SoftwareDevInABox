@@ -642,5 +642,224 @@
       },
       "Type" : "AWS::ElasticLoadBalancingV2::Listener"
     },
+    "ProductionCertificate":{
+      "Properties" : {
+        "DomainName" : "*.edwardsc.com",
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          } 
+        ],
+        "ValidationMethod" : "DNS"
+      },
+      "Type" : "AWS::CertificateManager::Certificate"
+    },
+    "ProdJiraELBListenerRule":{
+      "Properties" : {
+        "Actions" : [
+          {
+            "TargetGroupArn" : {
+              "Ref":"JiraTargetGroup"
+            },
+            "Type" : "forward"
+          }
+        ],
+        "Conditions" : [
+          {
+            "Field" : "host-header",
+            "Values" : ["jira.edwardsc.com"]
+          }
+        ],
+        "ListenerArn" : {
+          "Ref":"ProdELBListener"
+        },
+        "Priority" : 10
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::ListenerRule"
+    },
+    "JiraTargetGroup":{
+      "Properties" : {
+        "HealthCheckIntervalSeconds" : 60,
+        "HealthCheckPath" : "/status",
+        "HealthCheckProtocol" : "HTTP",
+        "HealthCheckTimeoutSeconds" : 10,
+        "HealthyThresholdCount" : 5,
+        "Matcher" :{
+          "HttpCode": 200
+        },
+        "Name" : "Jira Target Group",
+        "Port" : 8081,
+        "Protocol" : "HTTP",
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          } 
+        ],
+        "UnhealthyThresholdCount" : 2,
+        "VpcId" : {
+          "Ref":"VPC"
+        }
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
+    },
+    "ProdConfluenceELBListenerRule":{
+      "Properties" : {
+        "Actions" : [
+          {
+            "TargetGroupArn" : {
+              "Ref":"ConfluenceTargetGroup"
+            },
+            "Type" : "forward"
+          }
+        ],
+        "Conditions" : [
+          {
+            "Field" : "host-header",
+            "Values" : ["confluence.edwardsc.com"]
+          }
+        ],
+        "ListenerArn" : {
+          "Ref":"ProdELBListener"
+        },
+        "Priority" : 20
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::ListenerRule"
+    },
+    "ConfluenceTargetGroup":{
+      "Properties" : {
+        "HealthCheckIntervalSeconds" : 60,
+        "HealthCheckPath" : "/status",
+        "HealthCheckProtocol" : "HTTP",
+        "HealthCheckTimeoutSeconds" : 10,
+        "HealthyThresholdCount" : 5,
+        "Matcher" :{
+          "HttpCode": 200
+        },
+        "Name" : "Confluence Target Group",
+        "Port" : 8090,
+        "Protocol" : "HTTP",
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          } 
+        ],
+        "UnhealthyThresholdCount" : 2,
+        "VpcId" : {
+          "Ref":"VPC"
+        }
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
+    },
+    "ProdGitLabELBListenerRule":{
+      "Properties" : {
+        "Actions" : [
+          {
+            "TargetGroupArn" : {
+              "Ref":"GitLabTargetGroup"
+            },
+            "Type" : "forward"
+          }
+        ],
+        "Conditions" : [
+          {
+            "Field" : "host-header",
+            "Values" : ["GitLab.edwardsc.com"]
+          }
+        ],
+        "ListenerArn" : {
+          "Ref":"ProdELBListener"
+        },
+        "Priority" : 30
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::ListenerRule"
+    },
+    "GitLabTargetGroup":{
+      "Properties" : {
+        "HealthCheckIntervalSeconds" : 60,
+        "HealthCheckPath" : "/status",
+        "HealthCheckProtocol" : "HTTP",
+        "HealthCheckTimeoutSeconds" : 10,
+        "HealthyThresholdCount" : 5,
+        "Matcher" :{
+          "HttpCode": 200
+        },
+        "Name" : "GitLab Target Group",
+        "Port" : 8082,
+        "Protocol" : "HTTP",
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          } 
+        ],
+        "UnhealthyThresholdCount" : 2,
+        "VpcId" : {
+          "Ref":"VPC"
+        }
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
+    },
+    "ProdJenkinsELBListenerRule":{
+      "Properties" : {
+        "Actions" : [
+          {
+            "TargetGroupArn" : {
+              "Ref":"JenkinsTargetGroup"
+            },
+            "Type" : "forward"
+          }
+        ],
+        "Conditions" : [
+          {
+            "Field" : "host-header",
+            "Values" : ["jenkins.edwardsc.com"]
+          }
+        ],
+        "ListenerArn" : {
+          "Ref":"ProdELBListener"
+        },
+        "Priority" : 40
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::ListenerRule"
+    },
+    "JenkinsTargetGroup":{
+      "Properties" : {
+        "HealthCheckIntervalSeconds" : 60,
+        "HealthCheckPath" : "/status",
+        "HealthCheckProtocol" : "HTTP",
+        "HealthCheckTimeoutSeconds" : 10,
+        "HealthyThresholdCount" : 5,
+        "Matcher" :{
+          "HttpCode": 200
+        },
+        "Name" : "Jenkins Target Group",
+        "Port" : 8080,
+        "Protocol" : "HTTP",
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          } 
+        ],
+        "UnhealthyThresholdCount" : 2,
+        "VpcId" : {
+          "Ref":"VPC"
+        }
+      },
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
+    }
   }
 }
