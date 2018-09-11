@@ -942,6 +942,106 @@
         }
       },
       "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
+    },
+    "ConfluenceECSService": {
+      "Properties" : {
+        "Cluster" : {
+          "Ref": "ECSProdCluster"
+        },
+        "DesiredCount" : 1,
+        "HealthCheckGracePeriodSeconds" : 120,
+        "LaunchType" : "EC2",
+        "LoadBalancers": [
+          {
+            "TargetGroupArn": {
+              "Ref" : "ConfluenceTargetGroup"
+            },
+            "ContainerPort": "8090",
+            "ContainerName": "Confluence"
+          }
+        ],
+        "Role" : {
+          "Ref" : "ECSServiceRole"
+        },
+        "ServiceName" : "Confluence",
+        "TaskDefinition" : {
+          "Ref" : "ConfluenceECSTaskDef"
+        }
+      },
+      "Type" : "AWS::ECS::Service"
+    },
+    "ConfluenceECSTaskDef": {
+      "Properties" : {
+        "Volumes" : [
+          {
+            "Host" : {
+              "SourcePath" : "/opt/atlassian/confluence/home"
+            },
+            "Name" : "ConfluenceHome"
+            },
+            {
+            "Host" : {
+              "SourcePath" : "/opt/atlassian/confluence/logs"
+            },
+            "Name" : "ConfluenceLog"
+          }
+        ],
+        "Cpu" : 1024,
+        "Memory" : 2048,
+        "ContainerDefinitions" : [
+          {
+            "Environment" : [
+              {
+                "Name" : "X_PROXY_NAME",
+                "Value" : "confluence.edwardsc.com" 
+              },
+              {
+                "Name" : "X_PROXY_PORT",
+                "Value" : "443" 
+              },
+              {
+                "Name" : "X_PROXY_SCHEME",
+                "Value" : "https" 
+              },
+              {
+                "Name" : "X_PROXY_SECURE",
+                "Value" : "true" 
+              }
+            ],
+            "Essential" : true,
+            "Hostname" : "confluence",
+            "Image" : "cptactionhank/atlassian-confluence:latest",
+            "Memory" : 2048,
+            "MemoryReservation" : 2048,
+            "MountPoints" : [ 
+              {
+              "ContainerPath" : "/var/atlassian/confluence",
+              "SourceVolume" : "ConfluenceHome"
+              },
+              {
+              "ContainerPath" : "/opt/atlassian/confluence/logs",
+              "SourceVolume" : "ConfluenceLog"
+              }
+            ],
+            "Name" : "Confluence",
+            "PortMappings" : [ 
+              {
+                "ContainerPort" : 8090,
+                "HostPort" : 8090,
+                "Protocol" : "tcp"
+              },
+              {
+                "ContainerPort" : 8091,
+                "HostPort" : 8091,
+                "Protocol" : "tcp"
+              }
+            ],
+            "Privileged" : false,
+          }
+        ]
+      },
+      "Type" : "AWS::ECS::TaskDefinition"
+      }
     }
   }
 }
