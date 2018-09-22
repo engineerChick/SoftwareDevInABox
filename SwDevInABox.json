@@ -1054,6 +1054,279 @@
         ]
       },
       "Type" : "AWS::ECS::TaskDefinition"
-    }
+    },
+    "JiraECSService": {
+      "Properties" : {
+        "Cluster" : {
+          "Ref": "ECSProdCluster"
+        },
+        "DesiredCount" : 1,
+        "HealthCheckGracePeriodSeconds" : 120,
+        "LaunchType" : "EC2",
+        "LoadBalancers": [
+          {
+            "TargetGroupArn": {
+              "Ref" : "JiraTargetGroup"
+            },
+            "ContainerPort": "8080",
+            "ContainerName": "Jira"
+          }
+        ],
+        "Role" : {
+          "Ref" : "ECSServiceRole"
+        },
+        "ServiceName" : "Jira",
+        "TaskDefinition" : {
+          "Ref" : "JiraECSTaskDef"
+        }
+      },
+      "DependsOn": ["JiraTargetGroup","productionASG"],
+      "Type" : "AWS::ECS::Service"
+    },
+    "JiraECSTaskDef": {
+      "Properties" : {
+        "Volumes" : [
+          {
+            "Host" : {
+              "SourcePath" : "/opt/atlassian/jira/home"
+            },
+            "Name" : "JiraHome"
+          },
+          {
+            "Host" : {
+              "SourcePath" : "/opt/atlassian/jira/logs"
+            },
+            "Name" : "JiraLog"
+          }
+        ],
+        "Cpu" : 1024,
+        "Memory" : 2048,
+        "ContainerDefinitions" : [
+          {
+            "Environment" : [
+              {
+                "Name" : "X_PROXY_NAME",
+                "Value" : "jira.edwardsc.com" 
+              },
+              {
+                "Name" : "X_PROXY_PORT",
+                "Value" : "443" 
+              },
+              {
+                "Name" : "X_PROXY_SCHEME",
+                "Value" : "https" 
+              },
+              {
+                "Name" : "X_PROXY_SECURE",
+                "Value" : "true" 
+              }
+            ],
+            "Essential" : true,
+            "Hostname" : "jira",
+            "Image" : "cptactionhank/atlassian-jira:latest",
+            "Memory" : 2048,
+            "MemoryReservation" : 2048,
+            "MountPoints" : [ 
+              {
+              "ContainerPath" : "/var/atlassian/jira",
+              "SourceVolume" : "JiraHome"
+              },
+              {
+              "ContainerPath" : "/opt/atlassian/jira/logs",
+              "SourceVolume" : "JiraLog"
+              }
+            ],
+            "Name" : "Jira",
+            "PortMappings" : [ 
+              {
+                "ContainerPort" : 8080,
+                "HostPort" : 8081,
+                "Protocol" : "tcp"
+              }
+            ],
+            "Privileged" : false
+          }
+        ]
+      },
+      "Type" : "AWS::ECS::TaskDefinition"
+    },
+    "GitlabECSService": {
+      "Properties" : {
+        "Cluster" : {
+          "Ref": "ECSProdCluster"
+        },
+        "DesiredCount" : 1,
+        "HealthCheckGracePeriodSeconds" : 120,
+        "LaunchType" : "EC2",
+        "LoadBalancers": [
+          {
+            "TargetGroupArn": {
+              "Ref" : "GitlabTargetGroup"
+            },
+            "ContainerPort": "80",
+            "ContainerName": "Gitlab"
+          }
+        ],
+        "Role" : {
+          "Ref" : "ECSServiceRole"
+        },
+        "ServiceName" : "Gitlab",
+        "TaskDefinition" : {
+          "Ref" : "GitlabECSTaskDef"
+        }
+      },
+      "DependsOn": ["GitlabTargetGroup","productionASG"],
+      "Type" : "AWS::ECS::Service"
+    },
+    "GitlabECSTaskDef": {
+      "Properties" : {
+        "Volumes" : [
+          {
+            "Host" : {
+              "SourcePath" : "/opt/gitlab/config"
+            },
+            "Name" : "GitlabConfig"
+          },
+          {
+            "Host" : {
+              "SourcePath" : "/opt/gitlab/logs"
+            },
+            "Name" : "GitlabLog"
+          },
+          {
+            "Host":{
+              "SourcePath" : "/opt/gitlab/data"
+            },
+            "Name" : "GitlabData"
+          }
+        ],
+        "Cpu" : 1024,
+        "Memory" : 2048,
+        "ContainerDefinitions" : [
+          {
+            "Environment" : [
+              {
+                "Name" : "GITLAB_OMNIBUS_CONFIG",
+                "Value" : "external_url 'http://gitlab.edwardsc.com/'; gitlab_rails['lfs_enabled'] = true;" 
+              }
+            ],
+            "Essential" : true,
+            "Hostname" : "gitlab",
+            "Image" : "gitlab/gitlab-ce:latest",
+            "Memory" : 2048,
+            "MemoryReservation" : 2048,
+            "MountPoints" : [ 
+              {
+              "ContainerPath" : "/etc/gitlab",
+              "SourceVolume" : "GitlabConfig"
+              },
+              {
+              "ContainerPath" : "/var/log/gitlab",
+              "SourceVolume" : "GitlabLog"
+              },
+              {
+                "ContainerPath" : "/var/opt/gitlab",
+                "SourceVolume" : "GitlabData"
+              }
+            ],
+            "Name" : "Gitlab",
+            "PortMappings" : [ 
+              {
+                "ContainerPort" : 80,
+                "HostPort" : 8082,
+                "Protocol" : "tcp"
+              },
+              {
+                "ContainerPort" : 22,
+                "HostPort" : 2222,
+                "Protocol" : "tcp"
+              }
+            ],
+            "Privileged" : false
+          }
+        ]
+      },
+      "Type" : "AWS::ECS::TaskDefinition"
+    },
+    "JenkinsECSService": {
+      "Properties" : {
+        "Cluster" : {
+          "Ref": "ECSProdCluster"
+        },
+        "DesiredCount" : 1,
+        "HealthCheckGracePeriodSeconds" : 120,
+        "LaunchType" : "EC2",
+        "LoadBalancers": [
+          {
+            "TargetGroupArn": {
+              "Ref" : "JenkinsTargetGroup"
+            },
+            "ContainerPort": "8080",
+            "ContainerName": "Jenkins"
+          }
+        ],
+        "Role" : {
+          "Ref" : "ECSServiceRole"
+        },
+        "ServiceName" : "Jenkins",
+        "TaskDefinition" : {
+          "Ref" : "JenkinsECSTaskDef"
+        }
+      },
+      "DependsOn": ["JenkinsTargetGroup","productionASG"],
+      "Type" : "AWS::ECS::Service"
+    },
+    "JenkinsECSTaskDef": {
+      "Properties" : {
+        "Volumes" : [
+          {
+            "Host" : {
+              "SourcePath" : "/opt/jenkins/home"
+            },
+            "Name" : "JenkinsHome"
+          }
+        ],
+        "Cpu" : 1024,
+        "Memory" : 2048,
+        "ContainerDefinitions" : [
+          {
+            "Environment" : [],
+            "Essential" : true,
+            "Hostname" : "jenkins",
+            "Image" : "jenkins/jenkins:lts",
+            "Memory" : 2048,
+            "MemoryReservation" : 2048,
+            "MountPoints" : [ 
+              {
+              "ContainerPath" : "/var/jenkins_home",
+              "SourceVolume" : "JenkinsHome"
+              }
+            ],
+            "Name" : "Jenkins",
+            "PortMappings" : [ 
+              {
+                "ContainerPort" : 8080,
+                "HostPort" : 8080,
+                "Protocol" : "tcp"
+              }
+            ],
+            "Privileged" : false
+          }
+        ]
+      },
+      "Type" : "AWS::ECS::TaskDefinition"
+    },
+    "ConfluenceRecordSet" : {
+      "Properties" : {
+        "AliasTarget" : {
+          "DNSName" : "confluence.edwardsc.com",
+          "HostedZoneId" : "Z35SXDOTRQ7X7K"
+        },
+        "HostedZoneName" : "edwardsc.com.",
+        "Name" : "confluence.edwardsc.com.",
+        "Type" : "A"
+      }
+    },
+    "Type" : "AWS::Route53::RecordSet" 
   }
 }
