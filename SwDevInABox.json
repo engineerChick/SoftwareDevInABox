@@ -428,6 +428,13 @@
             "FromPort" : 8080,
             "ToPort" : 8080,
             "IpProtocol" : "tcp"
+          },
+          {
+            "CidrIp" : "0.0.0.0/0",
+            "Description" : "HTTPS Access",
+            "FromPort" : 443,
+            "ToPort" : 443,
+            "IpProtocol" : "tcp"
           }
         ],
         "Tags" :  [
@@ -722,6 +729,7 @@
         "Port" : 443,
         "Protocol" : "HTTPS"
       },
+      "DependsOn": "ProdLoadBalancer",
       "Type" : "AWS::ElasticLoadBalancingV2::Listener"
     },
     "ProductionCertificate":{
@@ -788,6 +796,7 @@
           "Ref":"VPC"
         }
       },
+      "DependsOn": "ProdLoadBalancer",
       "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
     },
     "ProdConfluenceELBListenerRule":{
@@ -839,6 +848,7 @@
           "Ref":"VPC"
         }
       },
+      "DependsOn": "ProdLoadBalancer",
       "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
     },
     "ProdGitLabELBListenerRule":{
@@ -890,6 +900,7 @@
           "Ref":"VPC"
         }
       },
+      "DependsOn": "ProdLoadBalancer",
       "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
     },
     "ProdJenkinsELBListenerRule":{
@@ -941,6 +952,7 @@
           "Ref":"VPC"
         }
       },
+      "DependsOn": "ProdLoadBalancer",
       "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup"
     },
     "ConfluenceECSService": {
@@ -968,6 +980,7 @@
           "Ref" : "ConfluenceECSTaskDef"
         }
       },
+      "DependsOn": ["ConfluenceTargetGroup","productionASG"],
       "Type" : "AWS::ECS::Service"
     },
     "ConfluenceECSTaskDef": {
@@ -978,8 +991,8 @@
               "SourcePath" : "/opt/atlassian/confluence/home"
             },
             "Name" : "ConfluenceHome"
-            },
-            {
+          },
+          {
             "Host" : {
               "SourcePath" : "/opt/atlassian/confluence/logs"
             },
@@ -1036,12 +1049,11 @@
                 "Protocol" : "tcp"
               }
             ],
-            "Privileged" : false,
+            "Privileged" : false
           }
         ]
       },
       "Type" : "AWS::ECS::TaskDefinition"
-      }
     }
   }
 }
