@@ -668,7 +668,9 @@
                     "ec2:Describe*",
                     "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
                     "elasticloadbalancing:Describe*",
-                    "elasticloadbalancing:RegisterInstancesWithLoadBalancer"
+                    "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                    "elasticloadbalancing:DeregisterTargets",
+                    "elasticloadbalancing:RegisterTargets"
                   ],
                   "Resource": "*"
                 }
@@ -980,7 +982,7 @@
           "Ref" : "ConfluenceECSTaskDef"
         }
       },
-      "DependsOn": ["ConfluenceTargetGroup","productionASG"],
+      "DependsOn": ["ConfluenceTargetGroup","productionASG","ProdELBListener"],
       "Type" : "AWS::ECS::Service"
     },
     "ConfluenceECSTaskDef": {
@@ -1161,7 +1163,7 @@
         "LoadBalancers": [
           {
             "TargetGroupArn": {
-              "Ref" : "GitlabTargetGroup"
+              "Ref" : "GitLabTargetGroup"
             },
             "ContainerPort": "80",
             "ContainerName": "Gitlab"
@@ -1175,7 +1177,7 @@
           "Ref" : "GitlabECSTaskDef"
         }
       },
-      "DependsOn": ["GitlabTargetGroup","productionASG"],
+      "DependsOn": ["GitLabTargetGroup","productionASG"],
       "Type" : "AWS::ECS::Service"
     },
     "GitlabECSTaskDef": {
@@ -1319,14 +1321,14 @@
     "ConfluenceRecordSet" : {
       "Properties" : {
         "AliasTarget" : {
-          "DNSName" : "confluence.edwardsc.com",
+          "DNSName" : { "Fn::GetAtt" : ["ProdLoadBalancer", "DNSName"] },
           "HostedZoneId" : "Z35SXDOTRQ7X7K"
         },
         "HostedZoneName" : "edwardsc.com.",
         "Name" : "confluence.edwardsc.com.",
         "Type" : "A"
-      }
-    },
-    "Type" : "AWS::Route53::RecordSet" 
+      },
+      "Type" : "AWS::Route53::RecordSet"
+    }
   }
 }
