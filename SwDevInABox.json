@@ -286,7 +286,7 @@
         "KeyName" : {
           "Ref": "KeyPair"
         },
-        "LaunchConfigurationName": "Production",
+        "LaunchConfigurationName": "Production1",
         "SecurityGroups": [
           {
             "Ref": "productionSecurityGroupPublic"
@@ -320,11 +320,12 @@
                   "Ref": "ECSProdCluster"
                 },
                 " >> /etc/ecs/ecs.config\n",
-                "service docker restart\n",
-                "start ecs\n",
+                { "Fn::Sub": "sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${FileSystem}.efs.${AWS::Region}.amazonaws.com:/ /opt\n"},
                 "mkdir -p /opt/atlassian/{jira,confluence}/{home,logs} /opt/{gitlab,jenkins/home}\n",
                 "chown daemon:root -R /opt/atlassian\n",
-                "chown 1000:root /opt/jenkins/home\n"
+                "chown 1000:root /opt/jenkins/home\n",
+                "service docker restart\n",
+                "start ecs\n"
 
               ]
             ]
@@ -921,7 +922,7 @@
     "JenkinsTargetGroup":{
       "Properties" : {
         "HealthCheckIntervalSeconds" : 60,
-        "HealthCheckPath" : "/status",
+        "HealthCheckPath" : "/robots.txt",
         "HealthCheckProtocol" : "HTTP",
         "HealthCheckTimeoutSeconds" : 10,
         "HealthyThresholdCount" : 5,
@@ -1355,6 +1356,49 @@
         "Type" : "A"
       },
       "Type" : "AWS::Route53::RecordSet"
-    }
+    },
+    "MountTargetSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "GroupDescription": "Security group for mount target",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "CidrIp": "172.17.0.0/24"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "CidrIp": "172.17.2.0/24"
+          }
+        ]
+      }
+    },
+    "FileSystem": {
+      "Type": "AWS::EFS::FileSystem",
+      "Properties": {
+        "PerformanceMode": "generalPurpose"
+      }
+    },
+    "MountTargetSubnetPublic1": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": { "Ref": "FileSystem" },
+        "SubnetId": { "Ref": "SubnetPublic1" },
+        "SecurityGroups": [ { "Ref": "MountTargetSecurityGroup" } ]        
+      }
+    },
+    "MountTargetSubnetPublic2": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": { "Ref": "FileSystem" },
+        "SubnetId": { "Ref": "SubnetPublic2" },
+        "SecurityGroups": [ { "Ref": "MountTargetSecurityGroup" } ]        
+      }
+    }    
   }
 }
