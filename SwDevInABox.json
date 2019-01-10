@@ -81,7 +81,8 @@
     },
     "SubnetPrivate": {
       "Properties": {
-        "CidrBlock": "172.17.100.0/24",
+        "AvailabilityZone": "us-east-1c",
+        "CidrBlock": "172.17.101.0/24",
         "MapPublicIpOnLaunch": false,
         "VpcId": {
           "Ref": "VPC"
@@ -97,6 +98,33 @@
                     "Ref": "AWS::StackName"
                   },
                   "-SubnetPrivate"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Subnet"
+    },
+    "SubnetPrivate2": {
+      "Properties": {
+        "AvailabilityZone": "us-east-1d",
+        "CidrBlock": "172.17.200.0/24",
+        "MapPublicIpOnLaunch": false,
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "-SubnetPrivate2"
                 ]
               ]
             }
@@ -1399,6 +1427,29 @@
         "SubnetId": { "Ref": "SubnetPublic2" },
         "SecurityGroups": [ { "Ref": "MountTargetSecurityGroup" } ]        
       }
-    }    
+    },
+    "MyDB" : {
+      "Type" : "AWS::RDS::DBInstance",
+      "Properties" : {
+          "DBSubnetGroupName" : {"Ref": "DBSubnetGroup"},
+          "AllocatedStorage" : "20",
+          "DBInstanceClass" : "db.t2.small",
+          "Engine" : "postgres",
+          "MasterUsername" : "God",
+          "MasterUserPassword" : "FINEChr1stopher!!",
+          "VPCSecurityGroups" : [ { "Fn::GetAtt": [ "productionSecurityGroupPrivate", "GroupId" ] } ]
+      },
+      "DeletionPolicy" : "Snapshot"
+     },
+   "DBSubnetGroup": {
+     "Type" : "AWS::RDS::DBSubnetGroup",
+     "Properties" : {
+       "DBSubnetGroupDescription" : "Something stupid RDS requires.",
+       "SubnetIds" : [ 
+         {"Ref": "SubnetPrivate"},
+         {"Ref": "SubnetPrivate2"} 
+        ]
+      }
+   }          
   }
 }
